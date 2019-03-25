@@ -1,0 +1,29 @@
+version: '3'
+
+services:
+    db:
+        image: mysql:5.7
+        restart: always
+        environment:
+            - MYSQL_ROOT_PASSWORD=root
+            - MYSQL_DATABASE=foreign_currency_test
+            - MYSQL_USER=alhamsya
+            - MYSQL_PASSWORD=alhamsya
+        ports:
+            - '3306:3306'
+        volumes:
+            - /var/lib/mysql
+    web:
+      image: alhamsya
+      build: .
+#      command: gunicorn django_www.wsgi --bind 0.0.0.0:8000 --workers 3
+      command: python manage.py runserver 0.0.0.0:8000 --insecure
+      ports:
+        - '8000:8000'
+      links:
+        - db
+    migration:
+      image: alhamsya
+      command: python manage.py migrate --noinput
+      depends_on:
+        - db

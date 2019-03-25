@@ -1,0 +1,21 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+venv*
+
+# Pytest and coverage
+.cache
+.coverage
+
+# Visual code
+.vscode/
+
+# Pycharm
+.idea/
+.idea/*
+
+# Log
+django_www/django_www/log/*
