@@ -3,7 +3,7 @@ import json
 from datetime import datetime, timedelta
 
 from django.db.models import F, Count
-from django.db import IntegrityError, transaction
+from django.db import IntegrityError, transaction, connection
 
 from api.models import *
 from api.serializers import *
@@ -18,19 +18,15 @@ def get_setting():
         id=1
     ).first()
 
+    setting = SettingSerializer(q).data
+
     data = {
-        'is_maintenance': False,
-        'message': 'System maintenance'
+        'is_maintenance': False
     }
 
-    if not q:
-        data['is_maintenance'] = True
-        data['message'] = "Please insert data on setting database"
-        return data
-    else:
-        setting = SettingSerializer(q).data
-        data['is_maintenance'] = setting['is_maintenance']
-        return data
+    data['is_maintenance'] = setting['is_maintenance']
+
+    return data
 
 def add_exchange_rate_log(get_exchange_db, exchange_rate):
     try:
@@ -102,11 +98,33 @@ def get_trend_rate(limit):
     return json.dumps(TrendSerializer(trend_exchnage_rate, many=True).data)
 
 def get_rate_track(date_req):
-    datetime_obj = datetime.strptime(date_req, '%Y-%m-%d')
-    # end_week = datetime_obj + datetime.timedelta(7)
-    exhange_log = ExchangeRateLog.objects.filter(
-        date_rate=[datetime_obj, datetime_obj]
-    ).all()
+    start_week = datetime.strptime(date_req, '%Y-%m-%d')
+    end_week = start_week - timedelta(days=7)
+    start_week = start_week.date().strftime('%Y-%m-%d')
+    end_week = end_week.date().strftime('%Y-%m-%d')
 
-    return False
+    cursor = connection.cursor()
+    cursor.execute(
+        "SELECT er.id, IF(Isnull(Avg(rate)), 'insuffient data', Avg(rate)) AS 'week_avg', "
+        "er.from_rate, er.to_rate, IF(Isnull(erl.rate), 'insuffient data', erl.rate)   AS rate "
+        "FROM   `foreign_currency_exchange_rate_log` erl "
+        "RIGHT JOIN foreign_currency_exchange_rate er ON er.id = erl.exchange_rate_id "
+        "AND  erl.date_rate BETWEEN %s AND %s"
+        "GROUP  BY erl.exchange_rate_id, er.from_rate, er.to_rate, erl.rate",
+        (end_week, start_week)
+    )
 
+    row = cursor.fetchall()
+    result = []
+
+    for data in row:
+        data = {
+            "from_rate": data[2],
+            "row_rate": data[3],
+            "week_avg": data[1].decode('utf-8'),
+            "rate": data[4]
+
+        }
+        result.append(data)
+
+    return result

@@ -152,13 +152,9 @@ class DetailRateView(ProtectedView, APIView):
             if not sts_validate_data:
                 return resp_err('Invalid input', 1, 417)
 
-            a = db_manager.get_rate_track(param)
+            data = db_manager.get_rate_track(param)
 
-            result = {
-                "asas": True
-            }
-
-            return resp_success(result)
+            return resp_success(data)
 
 
 

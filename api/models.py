@@ -1,6 +1,3 @@
-from django.db.backends.mysql.base import DatabaseWrapper
-DatabaseWrapper.data_types['DateTimeField'] = 'datetime'
-
 from django.db import models
 from django.utils import timezone
 
@@ -50,6 +47,14 @@ class ExchangeRateLog(CreateAt):
         unique=False,
     )
     rate = models.FloatField(max_length=100)
+
+    @property
+    def from_rate(self):
+        return self.exchange_rate.from_rate
+
+    @property
+    def to_rate(self):
+        return self.exchange_rate.to_rate
 
     class Meta:
         db_table = DB_PREFIX + 'exchange_rate_log'

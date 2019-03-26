@@ -16,3 +16,11 @@ class TrendSerializer(serializers.ModelSerializer):
     class Meta:
         model = ExchangeRateLog
         fields = ('date_rate', 'rate')
+
+class TrackSerializer(serializers.ModelSerializer):
+    from_rate = serializers.ReadOnlyField()
+    to_rate = serializers.ReadOnlyField()
+
+    class Meta:
+        model = ExchangeRateLog
+        fields = '__all__'
