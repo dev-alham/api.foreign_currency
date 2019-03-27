@@ -1,4 +1,4 @@
-# Setup Django Admin
+# Setup API Documentation
 Run using Docker
 ```bash
 docker-compose up
@@ -15,6 +15,9 @@ docker-compose run web python manage.py createsuperuser
 - `input username`
 - `input email`
 - `input password`
+
+###### Open Django Admin
+`<publishe ip docker>:8000/admin`
 
 ## Setting Maintenance
 insert into database id = 1, is_maintenance=1
